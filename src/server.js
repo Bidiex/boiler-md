@@ -14,6 +14,13 @@ const app = express();
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+// Iconos servidos desde node_modules: sin CDN, funcionan offline y con versión fija.
+// Lucide para la interfaz, Simple Icons para marcas/tecnologías.
+const NODE_MODULES = path.join(__dirname, '..', 'node_modules');
+const iconOptions = { immutable: true, maxAge: '30d', extensions: false, index: false };
+app.use('/icons/ui', express.static(path.join(NODE_MODULES, 'lucide-static', 'icons'), iconOptions));
+app.use('/icons/brands', express.static(path.join(NODE_MODULES, 'simple-icons', 'icons'), iconOptions));
+
 // Nunca devolvemos la key, solo si está configurada.
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, apiKeyConfigured: Boolean(process.env.ANTHROPIC_API_KEY) });
@@ -21,6 +28,11 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/session', (req, res) => {
   res.json(engine.getState());
+});
+
+// La UI lo consulta mientras espera un turno para mostrar qué está pasando.
+app.get('/api/session/activity', (req, res) => {
+  res.json(engine.getActivity());
 });
 
 app.post('/api/session/start', async (req, res, next) => {

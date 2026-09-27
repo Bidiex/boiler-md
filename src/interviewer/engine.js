@@ -36,6 +36,23 @@ function createState() {
 
 let state = store.loadSession() || createState();
 let busy = false;
+// Qué está haciendo el servidor durante un turno, para el indicador de la UI.
+let activity = null; // null | { kind: 'thinking' | 'writing' | 'updating', doc?: { number, title } }
+
+// El primer mensaje es el contexto interno; las respuestas del usuario vienen después.
+function hasUserAnswer(docState) {
+  return docState.messages.slice(1).some((m) => m.role === 'user' && typeof m.content === 'string');
+}
+
+// Ayuda de entrada para la primera respuesta de ciertos documentos.
+function inputHelper() {
+  const doc = DOCUMENTS[state.currentDoc];
+  const docState = state.docs[state.currentDoc];
+  if (state.status === 'complete' || docState.status !== 'active' || hasUserAnswer(docState)) return null;
+  if (doc.checklist) return { kind: 'checklist', items: doc.checklist };
+  if (doc.quickPick) return { kind: doc.quickPick };
+  return null;
+}
 
 function publicState() {
   const doc = DOCUMENTS[state.currentDoc];
@@ -46,11 +63,17 @@ function publicState() {
     currentDoc: { number: doc.number, title: doc.title },
     completedDocs: state.docs.filter((d) => d.status === 'complete').length,
     transcript: state.transcript,
+    inputHelper: inputHelper(),
   };
 }
 
 function pad(n) {
   return String(n).padStart(2, '0');
+}
+
+function setActivity(kind, docIndex) {
+  const doc = docIndex === undefined ? null : DOCUMENTS[docIndex];
+  activity = { kind, doc: doc && { number: doc.number, title: doc.title } };
 }
 
 function startDoc(docIndex) {
@@ -60,6 +83,7 @@ function startDoc(docIndex) {
   state.docs[docIndex].messages = [{ role: 'user', content: buildContextMessage(state, docIndex) }];
   state.transcript.push({
     role: 'system',
+    kind: 'doc-start',
     text: `── Documento ${doc.number} de ${TOTAL_DOCS} · ${doc.title} ──`,
     doc: doc.number,
   });
@@ -98,13 +122,15 @@ async function applyUpdate(input) {
   const target = state.docs[targetIndex];
   const change = input.change.trim();
 
+  setActivity('updating', targetIndex);
   target.markdown = await regenerateDocument(state, targetIndex, change);
   target.summary = `${target.summary}\n\nActualización posterior: ${change}`;
 
   const doc = DOCUMENTS[targetIndex];
   state.transcript.push({
     role: 'system',
-    text: `↺ Documento ${doc.number} · ${doc.title} actualizado`,
+    kind: 'doc-updated',
+    text: `Documento ${doc.number} · ${doc.title} actualizado`,
     doc: DOCUMENTS[state.currentDoc].number,
   });
   return `Documento ${pad(doc.number)} actualizado. Versión vigente:\n\n${target.markdown}`;
@@ -161,6 +187,7 @@ async function completeDoc(docIndex, input) {
     state.project.typeDetail = input.project_type_detail?.trim() || null;
   }
   docState.summary = input.summary.trim();
+  setActivity('writing', docIndex);
   docState.markdown = await generateDocument(state, docIndex);
   docState.status = 'complete';
 }
@@ -175,6 +202,7 @@ async function runTurn() {
   for (;;) {
     const docIndex = state.currentDoc;
     const docState = state.docs[docIndex];
+    setActivity('thinking');
     const response = await createMessage({
       max_tokens: 16000,
       system: SYSTEM_PROMPT,
@@ -209,6 +237,7 @@ async function runTurn() {
       state.status = 'complete';
       state.transcript.push({
         role: 'system',
+        kind: 'complete',
         text: `── Entrevista completa · ${TOTAL_DOCS} de ${TOTAL_DOCS} documentos ──`,
         doc: TOTAL_DOCS,
       });
@@ -235,11 +264,16 @@ async function withTurn(fn) {
     throw err;
   } finally {
     busy = false;
+    activity = null;
   }
 }
 
 function getState() {
   return publicState();
+}
+
+function getActivity() {
+  return { busy, activity };
 }
 
 async function start() {
@@ -276,4 +310,4 @@ function reset() {
   return publicState();
 }
 
-module.exports = { getState, start, sendMessage, reset, getFinishedSpec };
+module.exports = { getState, getActivity, start, sendMessage, reset, getFinishedSpec };

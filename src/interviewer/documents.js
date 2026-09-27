@@ -1,5 +1,21 @@
 // Estructura de los 9 documentos (sección 3 del spec).
-// Es la única fuente de verdad: el system prompt, el motor y el zip leen de aquí.
+// Es la única fuente de verdad: el system prompt, el motor, la UI y el zip leen de aquí.
+
+// Catálogo de sistemas base del doc 04. La UI lo muestra como checkboxes.
+const COMMON_SYSTEMS = [
+  'Notificaciones transitorias (toasts/alerts)',
+  'Centro de notificaciones persistente (leído/no leído)',
+  'Precios/planes configurables por admin sin tocar código',
+  'Panel de administración (rol admin separado)',
+  'Búsqueda y filtros',
+  'Permisos y roles (RBAC)',
+  'Auditoría/logs de actividad',
+  'Configuración/feature flags',
+  'Onboarding (tours, tooltips, checklist de primeros pasos)',
+  'Exportación de datos (CSV, PDF, backups descargables)',
+  'Comentarios/feedback interno entre usuarios',
+  'Suscripciones/facturación recurrente',
+];
 
 const DOCUMENTS = [
   {
@@ -24,6 +40,7 @@ const DOCUMENTS = [
     number: 2,
     title: 'Architecture',
     file: '02-architecture.md',
+    quickPick: 'stack', // la UI ofrece chips de tecnologías para la primera respuesta
     questions: [
       'Stack técnico (usar el que el usuario ya tenga, o sugerir según tipo/restricciones)',
       'Patrón de aplicación (web: SPA/MPA/SSR-híbrido; mobile: nativo/cross-platform; desktop: Electron/Tauri/nativo)',
@@ -59,15 +76,12 @@ const DOCUMENTS = [
     title: 'Common Systems',
     file: '04-common-systems.md',
     questions: [
-      'Presenta el catálogo de sistemas base como una lista numerada para que el usuario marque cuáles aplican: ' +
-        '1) Notificaciones transitorias (toasts/alerts); 2) Centro de notificaciones persistente (leído/no leído); ' +
-        '3) Precios/planes configurables por admin sin tocar código; 4) Panel de administración (rol admin separado); ' +
-        '5) Búsqueda y filtros; 6) Permisos y roles (RBAC); 7) Auditoría/logs de actividad; ' +
-        '8) Configuración/feature flags; 9) Onboarding (tours, tooltips, checklist); ' +
-        '10) Exportación de datos (CSV, PDF, backups); 11) Comentarios/feedback interno entre usuarios; ' +
-        '12) Suscripciones/facturación recurrente',
+      'Presenta el catálogo de sistemas base para que el usuario marque cuáles aplican ' +
+        '(la interfaz le muestra checkboxes; tú solo introduce la selección en una o dos frases, sin repetir la lista completa): ' +
+        COMMON_SYSTEMS.map((s, i) => `${i + 1}) ${s}`).join('; '),
       'Para cada sistema marcado como aplicable, pregunta el detalle específico de ese sistema',
     ],
+    checklist: COMMON_SYSTEMS,
     notes: [
       'Estos son sistemas de infraestructura funcional, distintos de las features del dominio de negocio. ' +
         'Ejemplo: un sistema de descuentos propio del catálogo de un ecommerce pertenece al doc 03; aquí solo entra si es el admin configurando promociones globales de la plataforma.',

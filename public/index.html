@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Spec Interviewer</title>
+  <link rel="icon" href="/icons/ui/terminal.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -12,27 +13,38 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <span class="brand">&gt; spec-interviewer<span class="cursor">_</span></span>
+      <span class="brand"><span class="icon" style="--icon: url(/icons/ui/terminal.svg)"></span> spec-interviewer<span class="cursor">_</span></span>
       <div class="topbar-right">
         <div class="progress" aria-live="polite">
           <span id="progress-label">Documento 1 de 9 · Planning</span>
           <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
         </div>
-        <button type="button" id="reset" class="ghost" title="Borra el progreso y empieza de cero">reiniciar</button>
+        <button type="button" id="reset" class="ghost" title="Borra el progreso y empieza de cero">
+          <span class="icon" style="--icon: url(/icons/ui/rotate-ccw.svg)"></span> reiniciar
+        </button>
       </div>
     </header>
 
     <main id="chat" class="chat" aria-live="polite"></main>
 
+    <section id="helper" class="helper" hidden></section>
+
     <form id="composer" class="composer" autocomplete="off">
       <span class="prompt">$</span>
-      <textarea id="input" rows="1" placeholder="Escribe tu respuesta… (Enter envía, Shift+Enter salto de línea)" required></textarea>
-      <button type="submit" id="send">enviar</button>
+      <textarea id="input" rows="1" placeholder="Escribe tu respuesta… (Enter envía, Shift+Enter salto de línea)"></textarea>
+      <button type="submit" id="send" title="Enviar (Enter)">
+        <span class="icon" style="--icon: url(/icons/ui/corner-down-left.svg)"></span> <span class="label">enviar</span>
+      </button>
     </form>
 
     <div id="done" class="done" hidden>
-      <span class="done-text">Spec lista: 9 documentos + CLAUDE.md + AGENTS.md</span>
-      <a id="download" class="button" href="/api/session/download" download="project-spec.zip">descargar project-spec.zip</a>
+      <span class="done-text">
+        <span class="icon ok" style="--icon: url(/icons/ui/circle-check.svg)"></span>
+        Spec lista: 9 documentos + CLAUDE.md + AGENTS.md
+      </span>
+      <a id="download" class="button" href="/api/session/download" download="project-spec.zip">
+        <span class="icon" style="--icon: url(/icons/ui/download.svg)"></span> descargar project-spec.zip
+      </a>
     </div>
   </div>
 
