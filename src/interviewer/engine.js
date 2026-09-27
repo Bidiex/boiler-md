@@ -261,6 +261,14 @@ async function sendMessage(text) {
   });
 }
 
+// Los documentos solo salen del servidor al completar los 9 (sección 4.3 del spec).
+function getFinishedSpec() {
+  if (state.status !== 'complete') {
+    throw new ConflictError('La descarga se habilita al completar los 9 documentos.');
+  }
+  return { projectName: state.project.name, docs: state.docs };
+}
+
 function reset() {
   if (busy) throw new ConflictError('Espera a que termine la respuesta en curso.');
   store.deleteSession();
@@ -268,4 +276,4 @@ function reset() {
   return publicState();
 }
 
-module.exports = { getState, start, sendMessage, reset };
+module.exports = { getState, start, sendMessage, reset, getFinishedSpec };

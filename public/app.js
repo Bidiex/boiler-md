@@ -5,6 +5,7 @@ const sendBtn = document.getElementById('send');
 const resetBtn = document.getElementById('reset');
 const progressLabel = document.getElementById('progress-label');
 const progressBar = document.getElementById('progress-bar');
+const done = document.getElementById('done');
 
 let finished = false;
 
@@ -39,11 +40,12 @@ function render(state) {
     ...state.transcript.map((m) => messageEl(m.role === 'system' ? 'divider' : m.role, m.text))
   );
   finished = state.status === 'complete';
+  form.hidden = finished;
+  done.hidden = !finished;
 
   if (finished) {
     progressLabel.textContent = `${state.totalDocs} de ${state.totalDocs} documentos · completo`;
     progressBar.style.width = '100%';
-    addMessage('system', 'Entrevista completa. La descarga del .zip se habilitará en el siguiente paso.');
   } else {
     const { number, title } = state.currentDoc;
     progressLabel.textContent = `Documento ${number} de ${state.totalDocs} · ${title}`;

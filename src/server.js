@@ -4,6 +4,7 @@ const express = require('express');
 const { Anthropic, MODEL } = require('./anthropic');
 const { ConflictError, InterviewError } = require('./errors');
 const engine = require('./interviewer/engine');
+const { buildSpecZip, ZIP_NAME } = require('./output/package');
 
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = '127.0.0.1'; // solo localhost en fase A
@@ -46,6 +47,16 @@ app.post('/api/session/message', async (req, res, next) => {
 app.post('/api/session/reset', (req, res, next) => {
   try {
     res.json(engine.reset());
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/session/download', async (req, res, next) => {
+  try {
+    const { projectName, docs } = engine.getFinishedSpec();
+    const zip = await buildSpecZip(projectName, docs);
+    res.attachment(ZIP_NAME).type('application/zip').send(zip);
   } catch (err) {
     next(err);
   }
