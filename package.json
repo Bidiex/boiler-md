@@ -1,0 +1,19 @@
+{
+  "name": "project-spec-interviewer",
+  "version": "0.1.0",
+  "description": "Entrevistador que genera la spec de contexto (9 docs .md) para iniciar un proyecto con un LLM constructor",
+  "main": "src/server.js",
+  "private": true,
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1"
+  }
+}
