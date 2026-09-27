@@ -72,6 +72,10 @@ const DOCUMENTS = [
       'Estos son sistemas de infraestructura funcional, distintos de las features del dominio de negocio. ' +
         'Ejemplo: un sistema de descuentos propio del catálogo de un ecommerce pertenece al doc 03; aquí solo entra si es el admin configurando promociones globales de la plataforma.',
     ],
+    generatorNotes:
+      'Estructura: primero una tabla resumen con los 12 sistemas del catálogo (columnas: #, Sistema, ¿Aplica? [Sí/No], Nota breve). ' +
+      'Después, una sección "##" por cada sistema marcado como aplicable, con el detalle acordado en la entrevista. ' +
+      'Los sistemas que no aplican solo aparecen en la tabla.',
   },
   {
     number: 5,
@@ -162,6 +166,34 @@ const DOCUMENTS = [
       'Este documento NO se llena con preguntas abiertas: se arma combinando los criterios de éxito ya definidos en los docs 01-08 más red flags universales. ' +
         'Solo haz las 2 preguntas de cierre listadas y luego cierra el documento.',
     ],
+    generatorNotes: `No sigas la estructura de "una sección por pregunta". Arma el checklist con estas 4 secciones, usando casillas "- [ ]" y criterios verificables y concretos de ESTE proyecto (cita entidades, flujos, sistemas y decisiones de los docs 01-08 por su nombre):
+
+## A — Completitud de la spec (antes de tocar código)
+Deriva los ítems de los docs 01-08. Como mínimo:
+- Cada documento con sus puntos clave respondidos, sin vacíos (lista explícitamente los puntos que quedaron "pendiente")
+- Reglas de negocio no obvias (doc 03) explícitas, no asumidas
+- Autorización granular (doc 05) definida por cada entidad de datos (lista cada entidad)
+
+## B — Red flags universales (con código ya avanzado)
+Incluye siempre estos 8, adaptando la redacción al stack del proyecto:
+- Secretos hardcodeados en frontend
+- Sin validación de inputs ("confiar en el cliente")
+- Sin manejo de errores (crashes silenciosos o errores crudos expuestos)
+- Cero tests, "funciona en mi máquina"
+- Sin backups, sin plan de rollback
+- Estados de carga/error inconsistentes o ausentes
+- Acceso directo a datos sin reglas de permisos (sin RLS o equivalente)
+- Sin monitoreo (los problemas los descubren los usuarios, no el equipo)
+
+## C — Cumplimiento contra la spec propia
+- Un ítem por cada sistema base marcado como aplicable en el doc 04: ¿implementado?
+- Un ítem por cada flujo crítico del doc 06: ¿tiene algún tipo de test o verificación?
+- Un ítem por cada función del MVP del doc 01: ¿completa?
+- Un ítem por cada elemento "fuera de alcance" del doc 01: ¿se mantuvo fuera?
+- Los criterios de "listo para producción" del doc 06
+
+## D — Estado y momento de la auditoría
+Registra las respuestas de cierre del usuario: etapa actual del proyecto y si la auditoría se aplica ahora (spec-only) o después de una primera versión construida.`,
   },
 ];
 

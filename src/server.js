@@ -1,7 +1,8 @@
 require('dotenv').config();
 const path = require('path');
 const express = require('express');
-const { default: Anthropic } = require('@anthropic-ai/sdk');
+const { Anthropic, MODEL } = require('./anthropic');
+const { ConflictError, InterviewError } = require('./errors');
 const engine = require('./interviewer/engine');
 
 const PORT = Number(process.env.PORT) || 3000;
@@ -56,8 +57,8 @@ app.use('/api', (req, res) => {
 
 // Traduce errores a mensajes para el usuario; el detalle técnico queda en la consola del servidor.
 app.use((err, req, res, next) => {
-  if (err instanceof engine.BusyError) return res.status(409).json({ error: err.message });
-  if (err instanceof engine.InterviewError) return res.status(502).json({ error: err.message });
+  if (err instanceof ConflictError) return res.status(409).json({ error: err.message });
+  if (err instanceof InterviewError) return res.status(502).json({ error: err.message });
 
   console.error(err);
   if (err instanceof Anthropic.AuthenticationError) {
@@ -76,7 +77,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, HOST, () => {
-  console.log(`Entrevistador corriendo en http://localhost:${PORT} (modelo: ${engine.MODEL})`);
+  console.log(`Entrevistador corriendo en http://localhost:${PORT} (modelo: ${MODEL})`);
   if (!process.env.ANTHROPIC_API_KEY) {
     console.warn('Aviso: falta ANTHROPIC_API_KEY en .env');
   }

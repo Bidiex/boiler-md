@@ -36,10 +36,11 @@ El tipo de proyecto (fijado en el doc 01) está en el contexto interno. Adapta e
 
 # Consistencia entre documentos
 
-El contexto interno incluye el resumen de los documentos ya cerrados. Si una respuesta contradice algo ya fijado en un documento anterior:
-1. Señala la contradicción explícitamente, citando ambos puntos.
-2. Pregunta si mantener lo original o actualizar el documento anterior.
-No asumas la respuesta.
+El contexto interno incluye la versión vigente de los documentos ya cerrados. Si una respuesta contradice algo ya fijado en un documento anterior:
+1. Señala la contradicción explícitamente, citando ambos puntos (documento y lo que dice).
+2. Pregunta si mantener lo original o actualizar el documento anterior. No asumas la respuesta.
+3. Si el usuario elige mantener lo original, sigue la entrevista respetándolo.
+4. Si elige actualizar, llama a update_previous_document con el número del documento y el cambio exacto. El sistema lo regenera completo y te devuelve la versión nueva, que pasa a ser la vigente. Si el cambio afecta a varios documentos anteriores, haz una llamada por cada uno. Después continúa con la entrevista del documento actual.
 
 # Fuera de alcance
 
@@ -54,7 +55,7 @@ No asumas la respuesta.
 
 # Herramienta complete_document
 
-Llámala una sola vez por documento, al cerrarlo. En "summary" escribe un resumen fiel y completo de TODAS las decisiones del documento, pregunta por pregunta, con las palabras y datos concretos del usuario (nombres, números, tecnologías). Marca como "pendiente" o "no aplica" lo que corresponda. Este resumen es lo único que se conserva del documento para los siguientes, así que no omitas detalles relevantes.`;
+Llámala una sola vez por documento, al cerrarlo. En "summary" escribe un resumen fiel y completo de TODAS las decisiones del documento, pregunta por pregunta, con las palabras y datos concretos del usuario (nombres, números, tecnologías). Marca como "pendiente" o "no aplica" lo que corresponda. Con la entrevista y este resumen se redacta el .md del documento, así que no omitas detalles relevantes.`;
 
 const COMPLETE_DOCUMENT_TOOL = {
   name: 'complete_document',
@@ -86,6 +87,27 @@ const COMPLETE_DOCUMENT_TOOL = {
   },
 };
 
+const UPDATE_PREVIOUS_DOCUMENT_TOOL = {
+  name: 'update_previous_document',
+  description:
+    'Actualiza un documento ya cerrado cuando el usuario confirmó explícitamente cambiar una decisión anterior ' +
+    'tras señalarle una contradicción. El documento se regenera completo y se devuelve su versión vigente.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      doc_number: {
+        type: 'integer',
+        description: 'Número del documento anterior a actualizar (menor que el documento actual).',
+      },
+      change: {
+        type: 'string',
+        description: 'Cambio exacto acordado: qué decía el documento y qué debe decir ahora.',
+      },
+    },
+    required: ['doc_number', 'change'],
+  },
+};
+
 function buildContextMessage(state, docIndex) {
   const doc = DOCUMENTS[docIndex];
   const num = String(doc.number).padStart(2, '0');
@@ -100,11 +122,8 @@ function buildContextMessage(state, docIndex) {
 
   const closed = state.docs.filter((d) => d.status === 'complete');
   if (closed.length) {
-    lines.push('', 'Documentos ya cerrados (resumen de decisiones):');
-    for (const d of closed) {
-      const meta = DOCUMENTS[d.index];
-      lines.push('', `## ${String(meta.number).padStart(2, '0')} — ${meta.title}`, d.summary);
-    }
+    lines.push('', 'Documentos ya cerrados (versión vigente):');
+    for (const d of closed) lines.push('', '<documento>', d.markdown.trim(), '</documento>');
   }
 
   lines.push('', `Documento actual: ${num} — ${doc.title} (${doc.number} de ${TOTAL_DOCS}).`);
@@ -119,4 +138,9 @@ function buildContextMessage(state, docIndex) {
   return lines.join('\n');
 }
 
-module.exports = { SYSTEM_PROMPT, COMPLETE_DOCUMENT_TOOL, buildContextMessage };
+module.exports = {
+  SYSTEM_PROMPT,
+  COMPLETE_DOCUMENT_TOOL,
+  UPDATE_PREVIOUS_DOCUMENT_TOOL,
+  buildContextMessage,
+};
